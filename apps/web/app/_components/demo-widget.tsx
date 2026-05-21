@@ -1,20 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-const SAMPLE_HTML = `<form action="/api/signup" method="POST" id="signup">
-  <label for="email">Email</label>
-  <input id="email" name="email" type="email" required placeholder="you@studio.com" />
-
-  <label for="password">Password</label>
-  <input id="password" name="password" type="password" required minlength="8" />
-
-  <label>
-    <input type="checkbox" name="newsletter" /> Subscribe to weekly digest
-  </label>
-
-  <button id="submit" type="submit">Create account</button>
-</form>`;
+import { SAMPLES, type Sample } from "./samples";
 
 type Field = {
   type: string;
@@ -29,11 +16,21 @@ type Result = {
 };
 
 export function DemoWidget() {
-  const [html, setHtml] = useState(SAMPLE_HTML);
+  const [activeSample, setActiveSample] = useState<Sample>(SAMPLES[0]);
+  const [html, setHtml] = useState(SAMPLES[0].html);
   const [result, setResult] = useState<Result | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [touched, setTouched] = useState(false);
+
+  const pickSample = (s: Sample) => {
+    setActiveSample(s);
+    setHtml(s.html);
+    setResult(null);
+    setError(null);
+    setTouched(false);
+  };
 
   const generate = async () => {
     setBusy(true);
@@ -45,7 +42,7 @@ export function DemoWidget() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           html,
-          testName: "form submission",
+          testName: `${activeSample.id} form`,
           baseUrl: "http://localhost:3000",
         }),
       });
@@ -69,6 +66,17 @@ export function DemoWidget() {
     setTimeout(() => setCopied(false), 1500);
   };
 
+  const download = () => {
+    if (!result) return;
+    const blob = new Blob([result.test.code], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = result.test.filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="relative z-10 mx-auto max-w-6xl px-6 pb-32">
       <div className="mb-8 text-center">
@@ -76,9 +84,36 @@ export function DemoWidget() {
           Try it now
         </h2>
         <p className="mt-2 text-muted-foreground">
-          Paste any HTML <code className="font-mono text-foreground/80">&lt;form&gt;</code>{" "}
-          — get a Playwright spec in milliseconds.
+          Pick a sample or paste your own. Get a Playwright spec in
+          milliseconds.
         </p>
+      </div>
+
+      <div className="mb-6 flex flex-wrap items-center justify-center gap-2">
+        {SAMPLES.map((s) => {
+          const active = s.id === activeSample.id;
+          return (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => pickSample(s)}
+              className={`group flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-all ${
+                active
+                  ? "border-violet-500/50 bg-violet-500/10 text-foreground"
+                  : "border-border bg-secondary/30 text-muted-foreground hover:border-border/80 hover:text-foreground"
+              }`}
+            >
+              <span className="font-medium">{s.label}</span>
+              <span
+                className={`hidden text-xs sm:inline ${
+                  active ? "text-muted-foreground" : "text-muted-foreground/60"
+                }`}
+              >
+                {s.description}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -87,17 +122,25 @@ export function DemoWidget() {
             <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
               input · html
             </span>
-            <button
-              type="button"
-              onClick={() => setHtml(SAMPLE_HTML)}
-              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-            >
-              reset to sample
-            </button>
+            {touched && (
+              <button
+                type="button"
+                onClick={() => {
+                  setHtml(activeSample.html);
+                  setTouched(false);
+                }}
+                className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+              >
+                reset to sample
+              </button>
+            )}
           </div>
           <textarea
             value={html}
-            onChange={(e) => setHtml(e.target.value)}
+            onChange={(e) => {
+              setHtml(e.target.value);
+              setTouched(true);
+            }}
             spellCheck={false}
             className="h-72 w-full resize-none rounded-md border border-border bg-background/60 p-3 font-mono text-xs leading-relaxed outline-none ring-violet-500/40 transition-all focus:ring-2"
           />
@@ -127,22 +170,29 @@ export function DemoWidget() {
               output · {result?.test.filename ?? "playwright spec"}
             </span>
             {result && (
-              <button
-                type="button"
-                onClick={copy}
-                className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {copied ? "copied ✓" : "copy"}
-              </button>
+              <div className="flex items-center gap-3 text-xs">
+                <button
+                  type="button"
+                  onClick={download}
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  ↓ download
+                </button>
+                <button
+                  type="button"
+                  onClick={copy}
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {copied ? "copied ✓" : "copy"}
+                </button>
+              </div>
             )}
           </div>
-          <div className="relative h-72 w-full overflow-auto rounded-md border border-border bg-background/60 p-3 font-mono text-xs leading-relaxed">
+          <div className="relative h-72 w-full overflow-auto rounded-md border border-border bg-background/60 font-mono text-xs leading-relaxed">
             {error ? (
-              <div className="text-red-400">⨯ {error}</div>
+              <div className="p-3 text-red-400">⨯ {error}</div>
             ) : result ? (
-              <pre className="whitespace-pre-wrap text-foreground/90">
-                {result.test.code}
-              </pre>
+              <HighlightedCode code={result.test.code} />
             ) : (
               <div className="flex h-full items-center justify-center text-muted-foreground">
                 <div className="text-center">
@@ -169,8 +219,125 @@ export function DemoWidget() {
           )}
         </div>
       </div>
+
+      {result && (
+        <SchemaView fields={result.schema.fields} />
+      )}
     </div>
   );
+}
+
+function SchemaView({ fields }: { fields: Field[] }) {
+  return (
+    <div className="mt-6 rounded-lg border border-border bg-secondary/20 p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+          parsed schema
+        </span>
+        <span className="font-mono text-xs text-muted-foreground/60">
+          {fields.length} field{fields.length === 1 ? "" : "s"} detected
+        </span>
+      </div>
+      <div className="grid gap-2">
+        {fields.map((f, i) => (
+          <div
+            key={i}
+            className="flex flex-wrap items-center gap-3 rounded-md border border-border bg-background/40 px-3 py-2"
+          >
+            <span className="font-mono text-xs text-violet-300">{f.type}</span>
+            <span className="text-sm">{f.label}</span>
+            {f.required && (
+              <span className="inline-flex items-center rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-amber-300">
+                required
+              </span>
+            )}
+            <span className="ml-auto font-mono text-xs text-muted-foreground/70">
+              {f.selector}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function HighlightedCode({ code }: { code: string }) {
+  const tokens = highlight(code);
+  return (
+    <pre className="whitespace-pre-wrap p-3 text-foreground/85">
+      {tokens.map((t, i) => (
+        <span key={i} className={t.cls}>
+          {t.text}
+        </span>
+      ))}
+    </pre>
+  );
+}
+
+type Token = { text: string; cls: string };
+
+const TS_KEYWORDS = new Set([
+  "import",
+  "from",
+  "const",
+  "let",
+  "var",
+  "async",
+  "await",
+  "function",
+  "return",
+  "if",
+  "else",
+  "true",
+  "false",
+  "null",
+  "undefined",
+  "new",
+  "this",
+  "type",
+  "interface",
+  "export",
+  "default",
+  "as",
+  "of",
+  "in",
+  "for",
+  "while",
+  "switch",
+  "case",
+  "break",
+  "continue",
+  "try",
+  "catch",
+  "finally",
+  "throw",
+  "require",
+]);
+
+function highlight(code: string): Token[] {
+  const tokens: Token[] = [];
+  const re =
+    /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`|\b\d+(?:\.\d+)?\b|\b[A-Za-z_][A-Za-z0-9_]*\b|\s+|[^\w\s])/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(code)) !== null) {
+    const t = m[0];
+    if (t.startsWith("//") || t.startsWith("/*")) {
+      tokens.push({ text: t, cls: "text-muted-foreground/55 italic" });
+    } else if (t.startsWith("\"") || t.startsWith("'") || t.startsWith("`")) {
+      tokens.push({ text: t, cls: "text-emerald-300/90" });
+    } else if (/^\d/.test(t)) {
+      tokens.push({ text: t, cls: "text-amber-300/90" });
+    } else if (TS_KEYWORDS.has(t)) {
+      tokens.push({ text: t, cls: "text-violet-300" });
+    } else if (/^[A-Z]/.test(t)) {
+      tokens.push({ text: t, cls: "text-cyan-300/90" });
+    } else if (/^\w+$/.test(t)) {
+      tokens.push({ text: t, cls: "text-foreground/85" });
+    } else {
+      tokens.push({ text: t, cls: "text-muted-foreground/70" });
+    }
+  }
+  return tokens;
 }
 
 function Stat({ label, value }: { label: string; value: number }) {
