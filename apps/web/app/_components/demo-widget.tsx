@@ -23,6 +23,7 @@ export function DemoWidget() {
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [touched, setTouched] = useState(false);
+  const [locale, setLocale] = useState<"en" | "tr">("en");
 
   const pickSample = (s: Sample) => {
     setActiveSample(s);
@@ -30,6 +31,7 @@ export function DemoWidget() {
     setResult(null);
     setError(null);
     setTouched(false);
+    if (s.id === "tr-uyelik") setLocale("tr");
   };
 
   const generate = async () => {
@@ -44,6 +46,7 @@ export function DemoWidget() {
           html,
           testName: `${activeSample.id} form`,
           baseUrl: "http://localhost:3000",
+          locale,
         }),
       });
       const data = await res.json();
@@ -87,6 +90,41 @@ export function DemoWidget() {
           Pick a sample or paste your own. Get a Playwright spec in
           milliseconds.
         </p>
+      </div>
+
+      <div className="mb-4 flex flex-wrap items-center justify-center gap-3">
+        <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+          fixtures
+        </span>
+        <div className="inline-flex overflow-hidden rounded-full border border-border bg-secondary/30 text-xs">
+          <button
+            type="button"
+            onClick={() => setLocale("en")}
+            className={`px-3 py-1 transition-colors ${
+              locale === "en"
+                ? "bg-violet-500/20 text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            🇺🇸 EN
+          </button>
+          <button
+            type="button"
+            onClick={() => setLocale("tr")}
+            className={`px-3 py-1 transition-colors ${
+              locale === "tr"
+                ? "bg-violet-500/20 text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            🇹🇷 TR
+          </button>
+        </div>
+        {locale === "tr" && (
+          <span className="font-mono text-[10px] text-muted-foreground/80">
+            TC kimlik (checksum-valid) · +90 · mahalle/ilçe/il
+          </span>
+        )}
       </div>
 
       <div className="mb-6 flex flex-wrap items-center justify-center gap-2">

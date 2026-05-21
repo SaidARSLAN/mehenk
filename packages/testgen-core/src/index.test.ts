@@ -73,4 +73,35 @@ describe("generatePlaywrightTests", () => {
     // edge cases off → no edge case test blocks
     expect(file.code).not.toContain("rejects when required");
   });
+
+  it("emits Turkish fixtures when locale=tr (TC Kimlik, +90, mahalle/ilçe/il)", () => {
+    const TR_FORM = `
+      <form id="kayit" method="POST">
+        <label for="ad">Ad Soyad</label>
+        <input id="ad" name="ad_soyad" type="text" required />
+        <label for="tckimlik">TC Kimlik No</label>
+        <input id="tckimlik" name="tc_kimlik" type="text" required pattern="[0-9]{11}" />
+        <label for="telefon">Telefon</label>
+        <input id="telefon" name="telefon" type="tel" required />
+        <label for="il">İl</label>
+        <input id="il" name="il" type="text" required />
+        <label for="adres">Adres</label>
+        <input id="adres" name="adres" type="text" required />
+        <button type="submit">Kaydet</button>
+      </form>
+    `;
+    const schema = parseHtmlForm(TR_FORM);
+    const file = generatePlaywrightTests(schema, { locale: "tr" });
+
+    // TC Kimlik checksum-valid sample
+    expect(file.code).toContain("10000000146");
+    // +90 phone
+    expect(file.code).toContain("+90 532");
+    // İstanbul (il)
+    expect(file.code).toContain("İstanbul");
+    // Address
+    expect(file.code).toContain("Mah.");
+    // Turkish name
+    expect(file.code).toContain("Ahmet Yılmaz");
+  });
 });

@@ -51,10 +51,10 @@ const fillStmt = (field: FormField, value: string): string => {
   return `await ${loc}.fill(${JSON.stringify(value)});`;
 };
 
-const happyPath = (schema: FormSchemaT): string => {
+const happyPath = (schema: FormSchemaT, locale: "en" | "tr" = "en"): string => {
   const lines = schema.fields
     .filter((f) => f.type !== "hidden" && f.type !== "submit")
-    .map((f) => fillStmt(f, sampleValue(f)));
+    .map((f) => fillStmt(f, sampleValue(f, locale)));
 
   const submit = schema.submitSelector
     ? `await page.locator(${JSON.stringify(schema.submitSelector)}).click();`
@@ -76,11 +76,12 @@ const happyPath = (schema: FormSchemaT): string => {
 const missingRequiredCase = (
   schema: FormSchemaT,
   omitField: FormField,
+  locale: "en" | "tr" = "en",
 ): string | null => {
   const fields = schema.fields.filter(
     (f) => f !== omitField && f.type !== "hidden" && f.type !== "submit",
   );
-  const fills = fields.map((f) => fillStmt(f, sampleValue(f)));
+  const fills = fields.map((f) => fillStmt(f, sampleValue(f, locale)));
   const submit = schema.submitSelector
     ? `await page.locator(${JSON.stringify(schema.submitSelector)}).click();`
     : `await page.locator(${JSON.stringify(schema.selector)}).press("Enter");`;
@@ -101,13 +102,14 @@ const invalidValueCase = (
   schema: FormSchemaT,
   invalidField: FormField,
   invalidValue: string,
+  locale: "en" | "tr" = "en",
 ): string => {
   const lines = schema.fields
     .filter((f) => f.type !== "hidden" && f.type !== "submit")
     .map((f) =>
       f === invalidField
         ? fillStmt(f, invalidValue)
-        : fillStmt(f, sampleValue(f)),
+        : fillStmt(f, sampleValue(f, locale)),
     );
   const submit = schema.submitSelector
     ? `await page.locator(${JSON.stringify(schema.submitSelector)}).click();`
@@ -135,7 +137,7 @@ export const generatePlaywrightTests = (
 
   blocks.push(
     `test("${options.testName} — happy path", async ({ page }) => {\n${indent(
-      happyPath(schema),
+      happyPath(schema, options.locale),
     )}\n});`,
   );
 
@@ -143,7 +145,7 @@ export const generatePlaywrightTests = (
     schema.fields
       .filter((f) => f.required && f.type !== "hidden" && f.type !== "submit")
       .forEach((field) => {
-        const body = missingRequiredCase(schema, field);
+        const body = missingRequiredCase(schema, field, options.locale);
         if (!body) return;
         blocks.push(
           `test("rejects when required field '${field.name ?? field.label ?? field.type}' is missing", async ({ page }) => {\n${indent(body)}\n});`,
@@ -153,11 +155,11 @@ export const generatePlaywrightTests = (
     schema.fields
       .filter((f) => f.type !== "hidden" && f.type !== "submit")
       .forEach((field) => {
-        const invalid = invalidValueFor(field);
+        const invalid = invalidValueFor(field, options.locale);
         if (!invalid) return;
         blocks.push(
           `test("rejects invalid ${field.type} value for '${field.name ?? field.label ?? field.type}'", async ({ page }) => {\n${indent(
-            invalidValueCase(schema, field, invalid),
+            invalidValueCase(schema, field, invalid, options.locale),
           )}\n});`,
         );
       });

@@ -13,6 +13,7 @@ const RequestBodySchema = z.object({
   baseUrl: z.string().url().optional(),
   testName: z.string().min(1).max(120).optional(),
   includeEdgeCases: z.boolean().optional(),
+  locale: z.enum(["en", "tr"]).optional(),
 });
 
 export const POST = async (request: NextRequest) => {
@@ -40,6 +41,7 @@ export const POST = async (request: NextRequest) => {
       baseUrl: parsed.data.baseUrl,
       testName: parsed.data.testName ?? "form submission",
       includeEdgeCases: parsed.data.includeEdgeCases ?? true,
+      locale: parsed.data.locale ?? "en",
     });
 
     return NextResponse.json(

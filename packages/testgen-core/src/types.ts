@@ -65,6 +65,8 @@ export const GenerateOptionsSchema = z.object({
   includeEdgeCases: z.boolean().default(true),
   /** Generate trace + screenshot on failure. */
   withTrace: z.boolean().default(true),
+  /** Fixture locale. "tr" emits TC Kimlik (valid checksum), +90 phone, mahalle/ilçe/il. */
+  locale: z.enum(["en", "tr"]).default("en"),
 });
 
 export type GenerateOptions = z.infer<typeof GenerateOptionsSchema>;

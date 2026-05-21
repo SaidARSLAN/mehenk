@@ -89,4 +89,33 @@ export const SAMPLES: Sample[] = [
   <button id="pay" type="submit">Pay now</button>
 </form>`,
   },
+  {
+    id: "tr-uyelik",
+    label: "TR Üyelik",
+    description: "TC Kimlik + +90 telefon + İl/İlçe",
+    html: `<form action="/api/kayit" method="POST" id="uyelik">
+  <label for="ad">Ad Soyad</label>
+  <input id="ad" name="ad_soyad" type="text" required />
+
+  <label for="tckimlik">TC Kimlik No</label>
+  <input id="tckimlik" name="tc_kimlik" type="text" required pattern="[0-9]{11}" />
+
+  <label for="email">E-posta</label>
+  <input id="email" name="email" type="email" required />
+
+  <label for="telefon">Telefon</label>
+  <input id="telefon" name="telefon" type="tel" required />
+
+  <label for="il">İl</label>
+  <input id="il" name="il" type="text" required />
+
+  <label for="ilce">İlçe</label>
+  <input id="ilce" name="ilce" type="text" required />
+
+  <label for="adres">Adres</label>
+  <textarea id="adres" name="adres" required></textarea>
+
+  <button id="kaydet" type="submit">Kayıt Ol</button>
+</form>`,
+  },
 ];
