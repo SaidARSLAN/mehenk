@@ -1,0 +1,27 @@
+{
+  "name": "mcp",
+  "private": true,
+  "scripts": {
+    "dev": "bun --bun next dev -p 3005",
+    "build": "bun --bun next build",
+    "start": "bun --bun next start",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@repo/testgen-core": "workspace:*",
+    "mcp-handler": "^1.1.0",
+    "next": "16.1.6",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "25.3.5",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "typescript": "^5.9.3"
+  }
+}
