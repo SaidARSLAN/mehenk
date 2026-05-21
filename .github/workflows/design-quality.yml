@@ -1,0 +1,70 @@
+name: design-quality
+
+on:
+  pull_request:
+    paths:
+      - 'DESIGN.md'
+      - 'apps/**'
+      - 'packages/design-system/**'
+  push:
+    branches: [main]
+    paths:
+      - 'DESIGN.md'
+
+jobs:
+  design-md-lint:
+    name: DESIGN.md spec lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Lint DESIGN.md (tokens, contrast, structure)
+        run: npx -y @google/design.md lint DESIGN.md
+
+  design-md-drift:
+    name: DESIGN.md drift vs main
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Diff DESIGN.md against main
+        run: |
+          git show origin/${{ github.base_ref }}:DESIGN.md > /tmp/DESIGN.before.md 2>/dev/null || cp DESIGN.md /tmp/DESIGN.before.md
+          npx -y @google/design.md diff /tmp/DESIGN.before.md DESIGN.md
+
+  pattern-gate:
+    name: DESIGN.md pattern gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Hard-fail on native alert/confirm/prompt
+        run: |
+          # Native browser dialogs forbidden — use themed modal/toast.
+          hits=$(grep -rEn "alert\(|confirm\(|prompt\(" apps/ packages/ 2>/dev/null \
+            | grep -v "node_modules\|//\|/\*\|\.prompt()\|BeforeInstallPromptEvent" \
+            || true)
+          if [ -n "$hits" ]; then
+            echo "::error::Native dialog detected — use themed modal/toast"
+            echo "$hits"
+            exit 1
+          fi
+          echo "OK — 0 native dialog calls"
+      - name: Hard-fail on Tailwind raw-color classes
+        run: |
+          # Use semantic class names (bg-surface, text-primary) — DESIGN.md tokens.
+          hits=$(grep -rEn "bg-\[#|text-\[#|border-\[#" apps/ packages/design-system/ 2>/dev/null \
+            | grep -v "node_modules" \
+            || true)
+          if [ -n "$hits" ]; then
+            echo "::error::Raw-color Tailwind class — use semantic class names"
+            echo "$hits"
+            exit 1
+          fi
+          echo "OK — 0 raw-color Tailwind classes"
