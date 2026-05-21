@@ -1,0 +1,30 @@
+{
+  "name": "@repo/testgen-core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./parse-html": "./src/parse-html.ts",
+    "./parse-json-schema": "./src/parse-json-schema.ts",
+    "./generate-playwright": "./src/generate-playwright.ts",
+    "./types": "./src/types.ts"
+  },
+  "scripts": {
+    "build": "echo 'testgen-core: source-only package, no build step'",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "cheerio": "^1.1.2",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^25.3.5",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}
