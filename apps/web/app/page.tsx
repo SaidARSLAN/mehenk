@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { CommandPaletteHost } from "./_components/command-palette-host";
 import { DemoWidget } from "./_components/demo-widget";
 import { FAQ } from "./_components/faq";
+import { FooterMeta } from "./_components/footer-meta";
 import { GitHubStars } from "./_components/github-stars";
 import { InstallBlock } from "./_components/install-block";
+import { StickyFab } from "./_components/sticky-fab";
 import { ThemeToggle } from "./_components/theme-toggle";
 
 export default function HomePage() {
@@ -30,10 +33,22 @@ export default function HomePage() {
             Install
           </Link>
           <Link
+            href="/docs"
+            className="hidden transition-colors hover:text-foreground md:inline"
+          >
+            Docs
+          </Link>
+          <Link
             href="#faq"
             className="hidden transition-colors hover:text-foreground md:inline"
           >
             FAQ
+          </Link>
+          <Link
+            href="/changelog"
+            className="hidden transition-colors hover:text-foreground lg:inline"
+          >
+            Changelog
           </Link>
           <a
             href="https://github.com/SaidARSLAN/mehenk"
@@ -218,7 +233,47 @@ export default function HomePage() {
             github.com/SaidARSLAN/mehenk
           </a>
         </p>
+
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground/80">
+          <Link
+            href="/legal/privacy"
+            className="transition-colors hover:text-foreground"
+          >
+            Privacy
+          </Link>
+          <Link
+            href="/legal/terms"
+            className="transition-colors hover:text-foreground"
+          >
+            Terms
+          </Link>
+          <Link
+            href="/legal/kvkk"
+            className="transition-colors hover:text-foreground"
+          >
+            KVKK
+          </Link>
+          <Link
+            href="/changelog"
+            className="transition-colors hover:text-foreground"
+          >
+            Changelog
+          </Link>
+          <Link
+            href="/docs"
+            className="transition-colors hover:text-foreground"
+          >
+            Docs
+          </Link>
+        </div>
+
+        <div className="mt-6">
+          <FooterMeta />
+        </div>
       </footer>
+
+      <StickyFab />
+      <CommandPaletteHost />
     </main>
   );
 }

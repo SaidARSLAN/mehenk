@@ -14,6 +14,13 @@ export function ThemeToggle() {
   const dark = mounted ? resolvedTheme === "dark" : true;
   const toggle = () => setTheme(dark ? "light" : "dark");
 
+  // Allow other components (e.g. command palette) to flip the theme.
+  useEffect(() => {
+    const onEvent = () => setTheme(dark ? "light" : "dark");
+    window.addEventListener("mehenk:theme-toggle", onEvent);
+    return () => window.removeEventListener("mehenk:theme-toggle", onEvent);
+  }, [dark, setTheme]);
+
   return (
     <button
       type="button"
