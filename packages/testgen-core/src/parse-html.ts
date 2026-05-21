@@ -1,4 +1,5 @@
 import * as cheerio from "cheerio";
+import type { AnyNode } from "domhandler";
 import { type FormField, type FormSchemaT, FormSchema } from "./types";
 
 const TYPE_MAP: Record<string, FormField["type"]> = {
@@ -22,8 +23,8 @@ const inferType = (raw: string | undefined): FormField["type"] => {
 };
 
 const pickSelector = (
-  $form: cheerio.Cheerio<cheerio.AnyNode>,
-  $el: cheerio.Cheerio<cheerio.AnyNode>,
+  $form: cheerio.Cheerio<AnyNode>,
+  $el: cheerio.Cheerio<AnyNode>,
   $: cheerio.CheerioAPI,
   index: number,
 ): { selector: string; kind: FormField["selectorKind"] } => {
@@ -57,7 +58,7 @@ const pickSelector = (
 };
 
 const collectLabel = (
-  $el: cheerio.Cheerio<cheerio.AnyNode>,
+  $el: cheerio.Cheerio<AnyNode>,
   $: cheerio.CheerioAPI,
 ): string | undefined => {
   const id = $el.attr("id");
@@ -71,20 +72,20 @@ const collectLabel = (
 };
 
 const collectOptions = (
-  $el: cheerio.Cheerio<cheerio.AnyNode>,
+  $el: cheerio.Cheerio<AnyNode>,
 ): string[] | undefined => {
   if ($el.prop("tagName")?.toLowerCase() !== "select") return undefined;
   const opts: string[] = [];
   $el.find("option").each((_, opt) => {
-    const value = $(opt as cheerio.AnyNode).attr("value") ?? "";
+    const value = $(opt as AnyNode).attr("value") ?? "";
     if (value) opts.push(value);
   });
   return opts.length > 0 ? opts : undefined;
 };
 
 const parseField = (
-  $form: cheerio.Cheerio<cheerio.AnyNode>,
-  el: cheerio.AnyNode,
+  $form: cheerio.Cheerio<AnyNode>,
+  el: AnyNode,
   $: cheerio.CheerioAPI,
   index: number,
 ): FormField | null => {
@@ -132,7 +133,7 @@ export const parseHtmlForm = (html: string): FormSchemaT => {
   }
 
   const fields: FormField[] = [];
-  const els: cheerio.AnyNode[] = [];
+  const els: AnyNode[] = [];
   $form.find("input, select, textarea, button").each((_, el) => {
     els.push(el);
   });
