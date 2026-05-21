@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "basehub dev",
-    "build": "basehub build",
+    "build": "node -e \"process.env.BASEHUB_TOKEN ? require('child_process').execSync('basehub build', {stdio:'inherit'}) : console.log('CMS build skipped — no BASEHUB_TOKEN')\"",
     "analyze": "basehub",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
