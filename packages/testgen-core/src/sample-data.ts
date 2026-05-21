@@ -60,10 +60,12 @@ const TR = {
 
 const isTcKimlikField = (field: FormField): boolean => {
   const haystack = `${field.name ?? ""} ${field.label ?? ""} ${field.placeholder ?? ""}`.toLowerCase();
-  return (
-    /tc[\s_-]?kimlik|tckn|identification|kimlik\s*no|t\.c\./.test(haystack) ||
-    (field.pattern?.includes("11") && field.type === "text")
-  );
+  if (
+    /tc[\s_-]?kimlik|tckn|identification|kimlik\s*no|t\.c\./.test(haystack)
+  ) {
+    return true;
+  }
+  return field.type === "text" && (field.pattern?.includes("11") ?? false);
 };
 
 const isAddressField = (field: FormField): boolean => {
