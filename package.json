@@ -1,0 +1,44 @@
+{
+  "name": "mehenk",
+  "version": "0.0.0",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SaidARSLAN/mehenk.git"
+  },
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "check": "ultracite check",
+    "fix": "ultracite fix",
+    "test": "turbo test",
+    "analyze": "turbo analyze",
+    "translate": "turbo translate",
+    "boundaries": "turbo boundaries",
+    "bump-deps": "pnpm dlx npm-check-updates --deep -u && pnpm install",
+    "bump-ui": "pnpm dlx shadcn@latest add --all --overwrite -c packages/design-system",
+    "migrate": "cd packages/database && pnpm dlx prisma format && pnpm dlx prisma generate && pnpm dlx prisma migrate dev",
+    "migrate:deploy": "cd packages/database && pnpm dlx prisma generate && pnpm dlx prisma migrate deploy",
+    "db:push": "cd packages/database && pnpm dlx prisma format && pnpm dlx prisma generate && pnpm dlx prisma db push",
+    "clean": "git clean -xdf node_modules",
+    "design:lint": "npx -y @google/design.md lint DESIGN.md"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.6",
+    "@repo/typescript-config": "workspace:*",
+    "@turbo/gen": "^2.8.14",
+    "@types/node": "^25.3.5",
+    "turbo": "^2.8.14",
+    "typescript": "^5.9.3",
+    "ultracite": "7.2.5",
+    "vitest": "^4.0.18"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "pnpm@10.31.0",
+  "overrides": {
+    "parse5": "^7.2.1"
+  },
+  "type": "module"
+}
