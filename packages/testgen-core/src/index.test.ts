@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { generatePlaywrightTests, parseHtmlForm } from "./index";
+import {
+  detectFlakyTests,
+  generatePlaywrightTests,
+  parseHtmlForm,
+  parseJUnitXml,
+  parseRunHistoryJson,
+} from "./index";
 
 const LOGIN_FORM = `
 <form action="/api/login" method="POST" id="login-form">
@@ -72,6 +78,78 @@ describe("generatePlaywrightTests", () => {
     expect(file.code).toContain("const { test, expect } = require");
     // edge cases off → no edge case test blocks
     expect(file.code).not.toContain("rejects when required");
+  });
+
+  it("ranks flaky tests by danger score (closer to 50/50 + more runs)", () => {
+    const runs = [
+      { id: "1", results: [
+        { test: "stable.test", status: "passed" as const },
+        { test: "flaky.50.test", status: "passed" as const },
+        { test: "flaky.20.test", status: "passed" as const },
+      ]},
+      { id: "2", results: [
+        { test: "stable.test", status: "passed" as const },
+        { test: "flaky.50.test", status: "failed" as const, errorMessage: "TimeoutError" },
+        { test: "flaky.20.test", status: "passed" as const },
+      ]},
+      { id: "3", results: [
+        { test: "stable.test", status: "passed" as const },
+        { test: "flaky.50.test", status: "passed" as const },
+        { test: "flaky.20.test", status: "passed" as const },
+      ]},
+      { id: "4", results: [
+        { test: "stable.test", status: "passed" as const },
+        { test: "flaky.50.test", status: "failed" as const },
+        { test: "flaky.20.test", status: "failed" as const },
+      ]},
+    ];
+    const report = detectFlakyTests(runs);
+    expect(report.totalRuns).toBe(4);
+    expect(report.flakyCount).toBe(2);
+    expect(report.stableCount).toBe(1);
+    // 50/50 split is more dangerous than 80/20 with same N
+    expect(report.flaky[0].name).toBe("flaky.50.test");
+    expect(report.flaky[0].passRate).toBeCloseTo(0.5);
+    expect(report.flaky[0].failureSamples).toContain("TimeoutError");
+  });
+
+  it("parses run history JSON (array + {runs:[]} shapes)", () => {
+    const arr = parseRunHistoryJson(JSON.stringify([
+      { id: "r1", results: [{ test: "a", status: "passed" }] },
+    ]));
+    expect(arr).toHaveLength(1);
+
+    const wrapped = parseRunHistoryJson(JSON.stringify({
+      runs: [{ id: "r2", results: [{ test: "b", status: "failed" }] }],
+    }));
+    expect(wrapped[0].id).toBe("r2");
+  });
+
+  it("parses minimal JUnit XML with failures + skipped", () => {
+    const xml = `
+      <testsuite name="run-1">
+        <testcase name="pass.case" classname="A" />
+        <testcase name="fail.case" classname="A">
+          <failure message="boom">Stack here</failure>
+        </testcase>
+        <testcase name="skip.case" classname="A">
+          <skipped />
+        </testcase>
+      </testsuite>
+      <testsuite name="run-2">
+        <testcase name="pass.case" classname="A" />
+        <testcase name="fail.case" classname="A" />
+      </testsuite>
+    `;
+    const runs = parseJUnitXml(xml);
+    expect(runs).toHaveLength(2);
+    expect(runs[0].results.find((r) => r.test.includes("pass"))?.status).toBe("passed");
+    expect(runs[0].results.find((r) => r.test.includes("fail"))?.status).toBe("failed");
+    expect(runs[0].results.find((r) => r.test.includes("skip"))?.status).toBe("skipped");
+
+    const report = detectFlakyTests(runs);
+    // fail.case passed in run-2 but failed in run-1 → flaky
+    expect(report.flaky.some((f) => f.name.includes("fail.case"))).toBe(true);
   });
 
   it("emits Turkish fixtures when locale=tr (TC Kimlik, +90, mahalle/ilçe/il)", () => {

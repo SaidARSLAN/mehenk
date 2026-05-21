@@ -1,6 +1,9 @@
 import {
+  detectFlakyTests,
   generatePlaywrightTests,
   parseHtmlForm,
+  parseJUnitXml,
+  parseRunHistoryJson,
 } from "@repo/testgen-core";
 import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 import { createMcpHandler, withMcpAuth } from "mcp-handler";
@@ -175,6 +178,82 @@ const handler = createMcpHandler(
           : "No issues detected. The spec uses web-first assertions and resilient locators.";
 
         return { content: [{ type: "text" as const, text }] };
+      },
+    );
+
+    server.registerTool(
+      "detect_flaky_tests",
+      {
+        title: "Detect flaky tests from run history",
+        description:
+          "Ingest test run history (normalized JSON or JUnit XML) and surface tests with pass rates strictly between 0 and 1. Ranked by danger score = passRate × (1-passRate) × log(runs+1) — 50/50 splits across many runs rank highest.",
+        inputSchema: {
+          format: z
+            .enum(["junit-xml", "json"])
+            .describe(
+              "junit-xml = JUnit-style <testsuite>/<testcase> XML; json = normalized [{id, results:[{test, status}]}] or {runs:[...]}",
+            ),
+          data: z
+            .string()
+            .min(20)
+            .describe("Raw XML or JSON text of the run history."),
+          topN: z
+            .number()
+            .int()
+            .min(1)
+            .max(50)
+            .optional()
+            .describe("Truncate output to top N flaky tests (default 10)."),
+        },
+      },
+      async ({ format, data, topN }) => {
+        try {
+          const runs =
+            format === "junit-xml" ? parseJUnitXml(data) : parseRunHistoryJson(data);
+          const report = detectFlakyTests(runs);
+          const top = report.flaky.slice(0, topN ?? 10);
+
+          const lines: string[] = [
+            `**Flaky report:** ${report.flakyCount} flaky / ${report.totalTests} unique tests across ${report.totalRuns} runs (${report.stableCount} stable).`,
+            "",
+          ];
+          if (top.length === 0) {
+            lines.push("No flaky tests detected. Stable suite.");
+          } else {
+            lines.push("| # | Test | Pass rate | Pass/Fail | Danger |");
+            lines.push("|---|------|-----------|-----------|--------|");
+            top.forEach((f, i) => {
+              lines.push(
+                `| ${i + 1} | \`${f.name}\` | ${Math.round(f.passRate * 100)}% | ${f.passed}/${f.failed} | ${f.dangerScore.toFixed(3)} |`,
+              );
+            });
+            const withSamples = top.filter((f) => f.failureSamples.length > 0);
+            if (withSamples.length > 0) {
+              lines.push("", "**Failure samples (first 3):**");
+              withSamples.forEach((f) => {
+                lines.push(`- \`${f.name}\`:`);
+                f.failureSamples.forEach((s) =>
+                  lines.push(`  - ${s.replace(/\n/g, " ")}`),
+                );
+              });
+            }
+            lines.push(
+              "",
+              "**Next step:** for the top entry, run `suggest_improvements` against its source to spot stale locators or hard waits.",
+            );
+          }
+
+          return {
+            content: [{ type: "text" as const, text: lines.join("\n") }],
+          };
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : "Detection failed.";
+          return {
+            content: [{ type: "text" as const, text: `Error: ${message}` }],
+            isError: true,
+          };
+        }
       },
     );
 

@@ -11,6 +11,7 @@ export const GET = () =>
       "generate_tests",
       "analyze_coverage",
       "suggest_improvements",
+      "detect_flaky_tests",
       "validate_syntax",
     ],
   });
