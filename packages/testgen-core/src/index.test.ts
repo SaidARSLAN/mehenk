@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { generatePlaywrightTests, parseHtmlForm } from "./index.js";
+import { generatePlaywrightTests, parseHtmlForm } from "./index";
 
 const LOGIN_FORM = `
 <form action="/api/login" method="POST" id="login-form">

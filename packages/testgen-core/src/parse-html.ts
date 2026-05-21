@@ -1,5 +1,5 @@
 import * as cheerio from "cheerio";
-import { type FormField, type FormSchemaT, FormSchema } from "./types.js";
+import { type FormField, type FormSchemaT, FormSchema } from "./types";
 
 const TYPE_MAP: Record<string, FormField["type"]> = {
   text: "text",

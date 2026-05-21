@@ -9,9 +9,9 @@
  * LLM enhancement (V0.2) will rewrite assertions to be page-aware after a
  * dry-run trace.
  */
-import { invalidValueFor, sampleValue } from "./sample-data.js";
-import type { FormField, FormSchemaT, GenerateOptions, TestFile } from "./types.js";
-import { GenerateOptionsSchema } from "./types.js";
+import { invalidValueFor, sampleValue } from "./sample-data";
+import type { FormField, FormSchemaT, GenerateOptions, TestFile } from "./types";
+import { GenerateOptionsSchema } from "./types";
 
 const indent = (s: string, n = 2): string =>
   s

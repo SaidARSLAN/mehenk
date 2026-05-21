@@ -6,7 +6,7 @@
  * Turkish-locale fixtures will live in a separate `@mehenk/tr-fixtures`
  * package (Faz 4).
  */
-import type { FormField } from "./types.js";
+import type { FormField } from "./types";
 
 const EMAIL = "test+playwright@example.com";
 const PHONE = "+1 415 555 0100";

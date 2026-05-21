@@ -1,5 +1,5 @@
-export { parseHtmlForm } from "./parse-html.js";
-export { generatePlaywrightTests } from "./generate-playwright.js";
+export { parseHtmlForm } from "./parse-html";
+export { generatePlaywrightTests } from "./generate-playwright";
 export {
   type FormField,
   type FormSchemaT,
@@ -7,4 +7,4 @@ export {
   type GenerateOptions,
   GenerateOptionsSchema,
   type TestFile,
-} from "./types.js";
+} from "./types";
