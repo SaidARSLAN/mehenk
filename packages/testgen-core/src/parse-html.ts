@@ -73,11 +73,12 @@ const collectLabel = (
 
 const collectOptions = (
   $el: cheerio.Cheerio<AnyNode>,
+  $: cheerio.CheerioAPI,
 ): string[] | undefined => {
   if ($el.prop("tagName")?.toLowerCase() !== "select") return undefined;
   const opts: string[] = [];
   $el.find("option").each((_, opt) => {
-    const value = $(opt as AnyNode).attr("value") ?? "";
+    const value = $(opt).attr("value") ?? "";
     if (value) opts.push(value);
   });
   return opts.length > 0 ? opts : undefined;
@@ -112,7 +113,7 @@ const parseField = (
     label: collectLabel($el, $),
     placeholder: $el.attr("placeholder"),
     required: $el.attr("required") !== undefined,
-    options: collectOptions($el),
+    options: collectOptions($el, $),
     pattern: $el.attr("pattern"),
     min: $el.attr("min"),
     max: $el.attr("max"),
