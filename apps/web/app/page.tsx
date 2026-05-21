@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DemoWidget } from "./_components/demo-widget";
+import { InstallBlock } from "./_components/install-block";
 import { ThemeToggle } from "./_components/theme-toggle";
 
 export default function HomePage() {
@@ -18,6 +19,12 @@ export default function HomePage() {
             className="hidden transition-colors hover:text-foreground sm:inline"
           >
             Demo
+          </Link>
+          <Link
+            href="#install"
+            className="hidden transition-colors hover:text-foreground sm:inline"
+          >
+            Install
           </Link>
           <a
             href="https://github.com/SaidARSLAN/mehenk"
@@ -54,9 +61,10 @@ export default function HomePage() {
         </h1>
 
         <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
-          AI-powered Playwright test generation for developers and agents. Paste
-          a form, point to a component, or hand it to your agent —{" "}
-          <span className="text-foreground">mehenk</span> writes the tests.
+          Playwright tests from HTML, AI agents, or your CI — in seconds. Built
+          for devs <span className="text-foreground">and</span> the agents that
+          ship with them. <span className="text-foreground">mehenk</span> writes
+          the spec; you ship the feature.
         </p>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
@@ -93,6 +101,8 @@ export default function HomePage() {
       <div id="demo" className="scroll-mt-24">
         <DemoWidget />
       </div>
+
+      <InstallBlock />
 
       <section className="relative z-10 mx-auto max-w-6xl px-6 pb-32">
         <div className="mb-12 text-center">
