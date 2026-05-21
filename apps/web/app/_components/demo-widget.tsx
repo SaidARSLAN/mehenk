@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SAMPLES, type Sample } from "./samples";
 
 type Field = {
@@ -25,6 +25,26 @@ export function DemoWidget() {
   const [touched, setTouched] = useState(false);
   const [locale, setLocale] = useState<"en" | "tr">("en");
 
+  // Hydrate from URL hash on mount: #example/<sample-id>
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const m = window.location.hash.match(/example\/([\w-]+)/);
+    if (!m) return;
+    const s = SAMPLES.find((x) => x.id === m[1]);
+    if (s) {
+      setActiveSample(s);
+      setHtml(s.html);
+      if (s.id === "tr-uyelik") setLocale("tr");
+      // Smooth scroll to the demo so the deep link feels useful
+      requestAnimationFrame(() => {
+        document.getElementById("demo")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+    }
+  }, []);
+
   const pickSample = (s: Sample) => {
     setActiveSample(s);
     setHtml(s.html);
@@ -32,6 +52,22 @@ export function DemoWidget() {
     setError(null);
     setTouched(false);
     if (s.id === "tr-uyelik") setLocale("tr");
+    // Reflect selection in the URL without re-render
+    if (typeof window !== "undefined") {
+      window.history.replaceState(
+        null,
+        "",
+        `${window.location.pathname}#example/${s.id}`,
+      );
+    }
+  };
+
+  const shareLink = async () => {
+    if (typeof window === "undefined") return;
+    const url = `${window.location.origin}${window.location.pathname}#example/${activeSample.id}`;
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
   };
 
   const generate = async () => {
@@ -211,6 +247,14 @@ export function DemoWidget() {
               <div className="flex items-center gap-3 text-xs">
                 <button
                   type="button"
+                  onClick={shareLink}
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                  title="Copy share-link to this sample"
+                >
+                  ↗ share
+                </button>
+                <button
+                  type="button"
                   onClick={download}
                   className="text-muted-foreground transition-colors hover:text-foreground"
                 >
@@ -300,15 +344,50 @@ function SchemaView({ fields }: { fields: Field[] }) {
 }
 
 function HighlightedCode({ code }: { code: string }) {
+  // Tokenize, then walk tokens splitting on newlines so we can emit line numbers.
   const tokens = highlight(code);
+  const lines: { gutter: number; spans: Token[] }[] = [{ gutter: 1, spans: [] }];
+  for (const tok of tokens) {
+    const parts = tok.text.split("\n");
+    parts.forEach((part, i) => {
+      if (part.length > 0) {
+        lines[lines.length - 1].spans.push({ text: part, cls: tok.cls });
+      }
+      if (i < parts.length - 1) {
+        lines.push({ gutter: lines.length + 1, spans: [] });
+      }
+    });
+  }
   return (
-    <pre className="whitespace-pre-wrap p-3 text-foreground/85">
-      {tokens.map((t, i) => (
-        <span key={i} className={t.cls}>
-          {t.text}
-        </span>
-      ))}
-    </pre>
+    <div className="overflow-auto font-mono text-xs leading-relaxed">
+      <div className="flex">
+        <div
+          aria-hidden
+          className="sticky left-0 select-none border-r border-border bg-background/80 px-2 py-3 text-right text-muted-foreground/40"
+        >
+          {lines.map((l) => (
+            <div key={l.gutter} className="tabular-nums">
+              {l.gutter}
+            </div>
+          ))}
+        </div>
+        <pre className="flex-1 whitespace-pre p-3 text-foreground/85">
+          {lines.map((l, lineIdx) => (
+            <div key={lineIdx}>
+              {l.spans.length === 0 ? (
+                <span>&nbsp;</span>
+              ) : (
+                l.spans.map((t, i) => (
+                  <span key={i} className={t.cls}>
+                    {t.text}
+                  </span>
+                ))
+              )}
+            </div>
+          ))}
+        </pre>
+      </div>
+    </div>
   );
 }
 
