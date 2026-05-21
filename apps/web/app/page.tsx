@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { DemoWidget } from "./_components/demo-widget";
+import { ThemeToggle } from "./_components/theme-toggle";
 
 export default function HomePage() {
   return (
@@ -10,7 +12,13 @@ export default function HomePage() {
           <Logo />
           <span className="font-semibold tracking-tight">mehenk</span>
         </Link>
-        <nav className="flex items-center gap-6 text-sm text-muted-foreground">
+        <nav className="flex items-center gap-4 text-sm text-muted-foreground">
+          <Link
+            href="#demo"
+            className="hidden transition-colors hover:text-foreground sm:inline"
+          >
+            Demo
+          </Link>
           <a
             href="https://github.com/SaidARSLAN/mehenk"
             className="transition-colors hover:text-foreground"
@@ -19,6 +27,7 @@ export default function HomePage() {
           >
             GitHub
           </a>
+          <ThemeToggle />
           <Link
             href="#waitlist"
             className="rounded-md bg-foreground px-3 py-1.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
@@ -28,7 +37,7 @@ export default function HomePage() {
         </nav>
       </header>
 
-      <section className="relative z-10 mx-auto max-w-4xl px-6 pt-24 pb-32 text-center">
+      <section className="relative z-10 mx-auto max-w-4xl px-6 pt-24 pb-20 text-center">
         <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-secondary/40 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-75" />
@@ -52,10 +61,10 @@ export default function HomePage() {
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <Link
-            href="#waitlist"
+            href="#demo"
             className="inline-flex h-11 items-center gap-2 rounded-md bg-foreground px-5 text-sm font-medium text-background transition-all hover:translate-y-[-1px] hover:shadow-[0_8px_24px_-8px_rgba(124,92,255,0.5)]"
           >
-            Join the waitlist
+            Try it live
             <ArrowRight />
           </Link>
           <a
@@ -81,7 +90,44 @@ export default function HomePage() {
         </div>
       </section>
 
+      <div id="demo" className="scroll-mt-24">
+        <DemoWidget />
+      </div>
+
       <section className="relative z-10 mx-auto max-w-6xl px-6 pb-32">
+        <div className="mb-12 text-center">
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            How it works
+          </h2>
+          <p className="mt-2 text-muted-foreground">
+            Three steps. No setup. No subscription.
+          </p>
+        </div>
+        <div className="grid gap-6 md:grid-cols-3">
+          <Step
+            n="01"
+            title="Drop HTML in"
+            desc="Paste any <form> markup, point to a component file, or let your AI agent send it over MCP."
+          />
+          <Step
+            n="02"
+            title="Get a Playwright spec"
+            desc="Smart selectors (id > name > label), happy path, edge cases for every required field, and validation traps for emails, URLs, and numbers."
+          />
+          <Step
+            n="03"
+            title="Run it in your CI"
+            desc="Drop the spec into your existing Playwright pipeline. Anti-flaky engine warns on stale locators. TR-locale fixtures roll out in v0.2."
+          />
+        </div>
+      </section>
+
+      <section className="relative z-10 mx-auto max-w-6xl px-6 pb-32">
+        <div className="mb-12 text-center">
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            Why mehenk
+          </h2>
+        </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <Feature
             title="MCP-native"
@@ -142,6 +188,26 @@ export default function HomePage() {
         </p>
       </footer>
     </main>
+  );
+}
+
+function Step({
+  n,
+  title,
+  desc,
+}: {
+  n: string;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <article className="rounded-lg border border-border bg-secondary/30 p-6">
+      <div className="font-mono text-xs text-muted-foreground">{n}</div>
+      <h3 className="mt-2 text-lg font-semibold tracking-tight">{title}</h3>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        {desc}
+      </p>
+    </article>
   );
 }
 
@@ -207,7 +273,11 @@ function ArrowRight() {
       strokeWidth="2"
       aria-hidden
     >
-      <path d="M5 12 L19 12 M13 6 L19 12 L13 18" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M5 12 L19 12 M13 6 L19 12 L13 18"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
