@@ -170,6 +170,7 @@ export function DemoWidget() {
             <button
               key={s.id}
               type="button"
+              data-sample={s.label}
               onClick={() => pickSample(s)}
               className={`group flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-all ${
                 active
