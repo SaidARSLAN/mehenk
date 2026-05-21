@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { DemoWidget } from "./_components/demo-widget";
+import { FAQ } from "./_components/faq";
+import { GitHubStars } from "./_components/github-stars";
 import { InstallBlock } from "./_components/install-block";
 import { ThemeToggle } from "./_components/theme-toggle";
 
@@ -26,6 +29,12 @@ export default function HomePage() {
           >
             Install
           </Link>
+          <Link
+            href="#faq"
+            className="hidden transition-colors hover:text-foreground md:inline"
+          >
+            FAQ
+          </Link>
           <a
             href="https://github.com/SaidARSLAN/mehenk"
             className="transition-colors hover:text-foreground"
@@ -45,12 +54,17 @@ export default function HomePage() {
       </header>
 
       <section className="relative z-10 mx-auto max-w-4xl px-6 pt-24 pb-20 text-center">
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-secondary/40 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-violet-500" />
-          </span>
-          v0 — early access
+        <div className="mb-6 flex flex-wrap items-center justify-center gap-3">
+          <div className="inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-3 py-1 text-xs font-medium text-violet-100 backdrop-blur">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-violet-500" />
+            </span>
+            Open beta · free for early users
+          </div>
+          <Suspense fallback={null}>
+            <GitHubStars />
+          </Suspense>
         </div>
 
         <h1 className="font-sans text-5xl font-semibold tracking-tighter sm:text-7xl">
@@ -61,10 +75,11 @@ export default function HomePage() {
         </h1>
 
         <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
-          Playwright tests from HTML, AI agents, or your CI — in seconds. Built
-          for devs <span className="text-foreground">and</span> the agents that
-          ship with them. <span className="text-foreground">mehenk</span> writes
-          the spec; you ship the feature.
+          Paste a form, get a typed Playwright spec in{" "}
+          <span className="text-foreground">~1.8s</span>. Drop into Claude Code
+          or Cursor over MCP. The only generator that ships{" "}
+          <span className="text-foreground">Turkish-locale fixtures</span> —
+          TC Kimlik, +90, mahalle/ilçe/il — out of the box.
         </p>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
@@ -86,7 +101,7 @@ export default function HomePage() {
           </a>
         </div>
 
-        <div className="mt-12 text-xs text-muted-foreground">
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-2">
             <span>Built for</span>
             <span className="font-mono text-foreground/80">Claude Code</span>
@@ -95,6 +110,11 @@ export default function HomePage() {
             <span>·</span>
             <span className="font-mono text-foreground/80">Copilot</span>
           </span>
+          <span>·</span>
+          <Stat label="median gen" value="1.8s" />
+          <Stat label="p95" value="3.5s" />
+          <Stat label="MCP tools" value="5" />
+          <Stat label="locales" value="2" />
         </div>
       </section>
 
@@ -157,6 +177,8 @@ export default function HomePage() {
         </div>
       </section>
 
+      <FAQ />
+
       <footer
         id="waitlist"
         className="relative z-10 mx-auto max-w-3xl px-6 pb-24 text-center"
@@ -198,6 +220,17 @@ export default function HomePage() {
         </p>
       </footer>
     </main>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className="font-mono text-foreground/80 tabular-nums">
+        {value}
+      </span>
+      <span className="text-muted-foreground/70">{label}</span>
+    </span>
   );
 }
 
